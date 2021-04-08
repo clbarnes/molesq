@@ -21,6 +21,6 @@ from molesq import Transformer
 tran = Transformer(my_control_points, my_deformed_control_points)
 deformed = tran.transform(my_points_of_interest)
 
-undeformed = tran.transform(deformed, inverse=True)
+undeformed = tran.transform(deformed, reverse=True)
 
 ```
