@@ -128,6 +128,8 @@ class Transformer:
     ) -> np.ndarray:
         """Transform some locations using the given control points.
 
+        Uses the affine form of the MLS algorithm.
+
         Parameters
         ----------
         locations : ArrayLike
