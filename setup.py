@@ -12,7 +12,19 @@ setup(
     long_description=readme,
     long_description_content_type="text/markdown",
     packages=find_packages(include=["molesq"]),
-    install_requires=["numpy", "scipy", "backports.strenum; python_version < '3.10'"],
+    install_requires=[
+        "numpy",
+        "scipy",
+        # "backports.strenum; python_version < '3.10'"
+    ],
+    classifiers=[
+        "Development Status :: 3 - Alpha",
+        "License :: OSI Approved :: MIT License",
+        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+    ],
+    python_requires=">=3.7, <4.0",
     use_scm_version=True,
     setup_requires=["setuptools_scm"],
 )

@@ -3,16 +3,16 @@ import sys
 import numpy as np
 from scipy.spatial.distance import cdist
 
-try:
-    from enum import StrEnum
-except ImportError:
-    from backports.strenum import StrEnum
+# try:
+#     from enum import StrEnum
+# except ImportError:
+#     from backports.strenum import StrEnum
 
 
-class Strategy(StrEnum):
-    AFFINE = "affine"
-    # SIMILARITY = "similarity"
-    # RIGID = "rigid"
+# class Strategy(StrEnum):
+#     AFFINE = "affine"
+#     # SIMILARITY = "similarity"
+#     # RIGID = "rigid"
 
 
 ORDER = "F"
@@ -104,7 +104,7 @@ class Transformer:
         self,
         locations,
         inverse=False,
-        strategy=Strategy.AFFINE,
+        # strategy=Strategy.AFFINE,
     ) -> np.ndarray:
         locs = np.asarray(locations)
 
@@ -117,7 +117,8 @@ class Transformer:
         # Reshape into arrays with consistent indices
         locs = locs.ravel().reshape(1, self.dimensions, 1, len(locs), order=ORDER)
 
-        if strategy == Strategy.AFFINE:
-            return self._transform_affine(locs, orig_cp, deformed_cp)
-        else:
-            raise ValueError(f"Unimplemented/ unknown strategy {strategy}")
+        # if strategy == Strategy.AFFINE:
+        #     return self._transform_affine(locs, orig_cp, deformed_cp)
+        # else:
+        #     raise ValueError(f"Unimplemented/ unknown strategy {strategy}")
+        return self._transform_affine(locs, orig_cp, deformed_cp)
