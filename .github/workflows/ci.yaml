@@ -46,7 +46,7 @@ jobs:
         with:
           python-version: 3.9
       - run: pip install build
-      - run: python -m build --sdist
+      - run: python -m build --sdist --wheel -o dist/ .
       - name: Publish package
         uses: pypa/gh-action-pypi-publish@master
         with:
