@@ -35,8 +35,3 @@ def brain_landmarks():
     from_cp = np.vstack([left, right])
     to_cp = np.vstack([right, left])
     return from_cp, to_cp
-
-
-@pytest.fixture
-def brain_landmarks(_brain_landmarks):
-    return _brain_landmarks[0].copy(), _brain_landmarks[1].copy()
