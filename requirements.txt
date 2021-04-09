@@ -4,6 +4,7 @@ scipy
 
 # dev
 
+imageio
 mypy
 flake8
 black

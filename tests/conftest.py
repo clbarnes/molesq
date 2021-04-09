@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import numpy as np
+from imageio import imread
 
 import pytest
 
@@ -35,3 +36,14 @@ def brain_landmarks():
     from_cp = np.vstack([left, right])
     to_cp = np.vstack([right, left])
     return from_cp, to_cp
+
+
+@pytest.fixture
+def woody():
+    return imread(DATA_DIR / "woody.png")[:, :, :-1]
+
+
+@pytest.fixture
+def woody_landmarks():
+    vals = np.genfromtxt(DATA_DIR / "woody_landmarks.tsv", delimiter="\t")
+    return vals[:, :2], vals[:, 2:]
