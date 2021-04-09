@@ -52,8 +52,11 @@ def neurons():
 
     fig = plt.figure()
     ax = fig.add_subplot(projection="3d")
-    ax.scatter(*orig.T, label="original")
-    ax.scatter(*deformed.T, label="deformed")
+    ax.scatter(*orig.T, label="original neuron")
+    ax.scatter(*deformed.T, label="deformed neuron")
+    ax.scatter(*control_points.T, label="control points")
+    # left/right mirror, so all control points are also deformed control points
+    # ax.scatter(*deformed_cp.T, label="deformed CP")
     ax.legend()
     ax.set_xlabel("x")
     ax.set_ylabel("y")
