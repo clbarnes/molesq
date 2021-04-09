@@ -17,18 +17,13 @@ def read_swc(fpath):
     )
 
 
-@pytest.fixture(scope="session")
-def _neurons():
+@pytest.fixture
+def neurons():
     return [read_swc(f) for f in sorted(DATA_DIR.glob("*.swc"))]
 
 
 @pytest.fixture
-def neurons(_neurons):
-    return _neurons[0].copy(), _neurons[1].copy()
-
-
-@pytest.fixture(scope="session")
-def _brain_landmarks():
+def brain_landmarks():
     vals = np.genfromtxt(
         DATA_DIR / "Brain_Lineage_Landmarks_EMtoEM_ProjectSpace.csv",
         skip_header=1,
