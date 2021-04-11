@@ -1,18 +1,16 @@
 from molesq import ImageTransformer
 
 
-def test_image(woody, woody_landmarks):
+def test_deform_viewport(woody, woody_landmarks):
     tran = ImageTransformer(
         woody,
         woody_landmarks[0],
         woody_landmarks[1],
         color_dim=2,
-        extrap_cval=woody.max(),
+        extrap_mode="nearest",
     )
-    deformed = tran.deform_whole_image()
+    deformed = tran.deform_viewport()
     # same dimensionality
-    assert deformed.ndim == woody.ndim
-    # same color depth
-    assert deformed.shape[-1] == woody.shape[-1]
+    assert deformed.shape == woody.shape
     # non-empty
     assert deformed.max() > 0 and deformed.min() < 255

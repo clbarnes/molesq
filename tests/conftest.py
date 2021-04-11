@@ -45,5 +45,7 @@ def woody():
 
 @pytest.fixture
 def woody_landmarks():
-    vals = np.genfromtxt(DATA_DIR / "woody_landmarks.tsv", delimiter="\t")
+    vals = np.genfromtxt(
+        DATA_DIR / "woody_landmarks.tsv", delimiter="\t", usecols=(1, 2, 3, 4)
+    )
     return vals[:, :2], vals[:, 2:]

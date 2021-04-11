@@ -1,14 +1,11 @@
 from __future__ import annotations
 from itertools import product
-from typing import Iterator
-import sys
-
-from .transform import Transformer
 
 import numpy as np
 from scipy.ndimage import map_coordinates
 
-LESS_THAN_ONE = 1 - sys.float_info.epsilon
+from .transform import Transformer
+from .utils import grid_field
 
 
 class ImageTransformer:
@@ -23,9 +20,16 @@ class ImageTransformer:
         extrap_cval=0,
     ) -> None:
         self.img = img
+        self.color_dim = color_dim
+        if color_dim is None:
+            self.channels = np.expand_dims(img, 0)
+        else:
+            self.channels = np.moveaxis(img, color_dim, 0)
+
         self.control_points = control_points
         self.deformed_control_points = deformed_control_points
-        self.color_dim = color_dim
+        if self.control_points.shape[1] != self.channels.ndim - 1:
+            raise ValueError("Dimensionality of image mismatches control points")
 
         self.interp_order = interp_order
         self.extrap_mode = extrap_mode
@@ -34,60 +38,57 @@ class ImageTransformer:
         self.transformer = Transformer(
             self.control_points, self.deformed_control_points
         )
-
-        if color_dim is None:
-            self.channel_shape = self.img.shape
-            self.img_shape = self.img.shape
-        else:
-            img_shape = list(self.img.shape)
-            img_shape[color_dim] = 1
-            self.channel_shape = tuple(img_shape)
-            img_shape.pop(color_dim)
-            self.img_shape = tuple(img_shape)
-
-    def with_deformed_control_points(self, deformed_control_points) -> ImageTransformer:
-        return type(self)(
-            self.img, self.control_points, deformed_control_points, self.color_dim
-        )
-
-    def _channels(self) -> Iterator[np.ndarray]:
-        slices = [slice(None)] * self.img.ndim
-        for idx in range(self.img.shape[self.color_dim]):
-            slices[self.color_dim] = idx
-            yield self.img[tuple(slices)]
+        self.img_shape = self.channels.shape[1:]
 
     def _map_coordinates(self, arr, coords):
+        """coords as NxD, not scipy order of DxN"""
         return map_coordinates(
             arr,
-            coords,
+            coords.T,
             order=self.interp_order,
             mode=self.extrap_mode,
             cval=self.extrap_cval,
         )
 
-    def deform_whole_image(self):
-        corners = np.array(
-            list(product([0] * len(self.img_shape), np.array(self.img_shape)))
+    def deform_viewport(self):
+        """Deform the image, keeping the viewport the same.
+
+        Some of the deformed image may be outside the field of view.
+        """
+        min_point = [0] * len(self.img_shape)
+        max_point = self.img_shape
+        return self.deform_arbitrary(min_point, max_point)
+
+    def deform_whole(self):
+        """Deform the entire image.
+
+        The viewport is also translated and scaled
+        to capture the entire extents of the deformed image.
+        The translation of the viewport origin is also returned.
+        """
+        corners = (
+            np.array(list(product([0, 1], repeat=len(self.img_shape)))) * self.img_shape
         )
+
         def_corners = self.transformer.transform(corners)
         min_point = np.min(def_corners, axis=0)
         max_point = np.max(def_corners, axis=0)
-        grid_axes = [np.arange(mi, ma + 1) for mi, ma in zip(min_point, max_point)]
-        channel_shape = [len(ga) for ga in grid_axes]
-        def_coords = np.stack(
-            [m.ravel() for m in np.meshgrid(*grid_axes, indexing="ij")],
-            axis=1,
-        )
-        coords = self.transformer.transform(def_coords, True).T
+        return self.deform_arbitrary(min_point, max_point), min_point
+
+    def deform_arbitrary(self, *args, **kwargs):
+        """Deform by sampling a regular grid in deformed space.
+
+        *args and **kwargs are passed to molesq.utils.grid_field.
+        """
+        eval_coords, coords_shape = grid_field(*args, **kwargs)
+        coords = self.transformer.transform(eval_coords, True)
 
         if self.color_dim is None:
-            return self._map_coordinates(self.img, coords).reshape(channel_shape)
-
-        channel_shape.insert(self.color_dim, 1)
+            return self._map_coordinates(self.img, coords).reshape(coords_shape)
 
         channels = [
-            self._map_coordinates(c, coords).reshape(channel_shape)
-            for c in self._channels()
+            self._map_coordinates(c, coords).reshape(coords_shape)
+            for c in self.channels
         ]
 
-        return np.concatenate(channels, self.color_dim)
+        return np.stack(channels, self.color_dim)
