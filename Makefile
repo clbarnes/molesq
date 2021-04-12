@@ -11,6 +11,10 @@ lint:
 test:
 	pytest --verbose
 
+.PHONY: test-quick
+test-quick:
+	pytest --verbose --benchmark-skip
+
 .PHONY: install
 install:
 	pip install .
