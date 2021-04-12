@@ -1,15 +1,16 @@
-numpy
-scipy
+numpy==1.20.2
+scipy==1.6.2
 # backports.strenum; python_version < '3.10'
 
 # dev
 
-imageio
-mypy
-flake8
-black
-pytest
-setuptools-scm
-setuptools
-wheel
-pdoc3
+imageio==2.9.0
+mypy==0.812
+flake8==3.9.0
+black==20.8.b1
+pytest==6.2.3
+setuptools-scm==6.0.1
+setuptools==56.0.0
+wheel==0.36.2
+pdoc3==0.9.2
+pytest-benchmark==3.2.3
