@@ -8,7 +8,9 @@ setup(
     name="molesq",
     url="https://github.com/clbarnes/molesq",
     author="Chris L. Barnes",
-    description="Implementation of moving least squares",
+    description=(
+        "Implementation of moving least squares for ND point and image deformation"
+    ),
     long_description=readme,
     long_description_content_type="text/markdown",
     packages=find_packages(include=["molesq"]),
@@ -17,6 +19,7 @@ setup(
         "scipy",
         # "backports.strenum; python_version < '3.10'"
     ],
+    test_requires=["pytest", "pytest-benchmark"],
     classifiers=[
         "Development Status :: 3 - Alpha",
         "License :: OSI Approved :: MIT License",
