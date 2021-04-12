@@ -39,6 +39,12 @@ def reshape_points(control_points: np.ndarray) -> np.ndarray:
 
 
 def _transform_affine(locs, orig_cp, deformed_cp):
+    """
+    Makes heavy use of Einstein summation, resources here:
+
+    * https://stackoverflow.com/questions/26089893/understanding-numpys-einsum
+    * https://ajcr.net/Basic-guide-to-einsum/
+    """
     n_locs, n_dim = locs.shape
     n_landmarks = len(orig_cp)
 
