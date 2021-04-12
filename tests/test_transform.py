@@ -1,5 +1,6 @@
 import numpy as np
 
+import pytest
 from molesq import Transformer
 from .reference_impl import moving_least_squares_affine_vectorized
 
@@ -52,3 +53,16 @@ def test_ref_works(brain_landmarks, neurons):
     ref = moving_least_squares_affine_vectorized(n, *brain_landmarks)
     assert n.shape == ref.shape
     assert not np.allclose(n, ref)
+
+
+@pytest.mark.benchmark(group="points")
+def test_benchmark(brain_landmarks, neurons, benchmark):
+    n = neurons[0]
+    t = Transformer(*brain_landmarks)
+    benchmark(t.transform, n)
+
+
+@pytest.mark.benchmark(group="points")
+def test_benchmark_ref(brain_landmarks, neurons, benchmark):
+    n = neurons[0]
+    benchmark(moving_least_squares_affine_vectorized, n, *brain_landmarks)
