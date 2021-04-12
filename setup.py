@@ -15,7 +15,7 @@ setup(
     long_description_content_type="text/markdown",
     packages=find_packages(include=["molesq"]),
     install_requires=[
-        "numpy",
+        "numpy>=1.20",
         "scipy",
         # "backports.strenum; python_version < '3.10'"
     ],
