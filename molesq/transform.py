@@ -44,6 +44,7 @@ def _transform_affine(locs, orig_cp, deformed_cp):
 
     * https://stackoverflow.com/questions/26089893/understanding-numpys-einsum
     * https://ajcr.net/Basic-guide-to-einsum/
+    * Playground: https://oracleofnj.github.io/einsum-explainer/
     """
     n_locs, n_dim = locs.shape
     n_landmarks = len(orig_cp)
