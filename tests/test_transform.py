@@ -55,10 +55,34 @@ def test_ref_works(brain_landmarks, neurons):
     assert not np.allclose(n, ref)
 
 
+def test_weighted(brain_landmarks, neurons):
+    n = neurons[0]
+    t = Transformer(*brain_landmarks)
+    deformed = t.transform(n)
+
+    rand = np.random.RandomState(1991)
+    weights = rand.random(len(brain_landmarks[0]))
+    t_weighted = Transformer(*brain_landmarks, weights=weights)
+    deformed_weighted = t_weighted.transform(n)
+
+    assert not np.allclose(n, deformed)
+    assert not np.allclose(n, deformed_weighted)
+    assert not np.allclose(deformed, deformed_weighted)
+
+
 @pytest.mark.benchmark(group="points")
 def test_benchmark(brain_landmarks, neurons, benchmark):
     n = neurons[0]
     t = Transformer(*brain_landmarks)
+    benchmark(t.transform, n)
+
+
+@pytest.mark.benchmark(group="points")
+def test_benchmark_weighted(brain_landmarks, neurons, benchmark):
+    n = neurons[0]
+    rand = np.random.RandomState(1991)
+    weights = rand.random(len(brain_landmarks[0]))
+    t = Transformer(*brain_landmarks, weights=weights)
     benchmark(t.transform, n)
 
 

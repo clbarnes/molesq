@@ -2,6 +2,7 @@ import sys
 
 import numpy as np
 from scipy.spatial.distance import cdist
+from typing import Optional
 
 from numpy.typing import ArrayLike
 
@@ -38,7 +39,7 @@ def reshape_points(control_points: np.ndarray) -> np.ndarray:
     return control_points.ravel().reshape(1, n_dimensions, n_locations, 1, order=ORDER)
 
 
-def _transform_affine(locs, orig_cp, deformed_cp):
+def _transform_affine(locs, orig_cp, deformed_cp, cp_weights=None):
     """
     Makes heavy use of Einstein summation, resources here:
 
@@ -52,10 +53,15 @@ def _transform_affine(locs, orig_cp, deformed_cp):
     # Pairwise distances between original control points and locations to transform
     # reshaped to 1,1,N_cp,N_l
     # jittered to avoid 0s
-    weights = 1 / (
-        cdist(orig_cp, locs, "sqeuclidean").reshape(1, 1, n_landmarks, n_locs)
-        + sys.float_info.epsilon
-    )
+
+    if cp_weights is None:
+        sqdists = cdist(orig_cp, locs, "sqeuclidean")
+    else:
+        # weights need to be factored in before squaring of distance, for unit reasons
+        sqdists = (cdist(orig_cp, locs) / cp_weights[:, np.newaxis]) ** 2
+
+    weights = 1 / (sqdists.reshape(1, 1, n_landmarks, n_locs) + sys.float_info.epsilon)
+
     weights_inverse_norm = 1 / np.sum(weights, axis=2)
 
     # reshape arrays for consistent indices
@@ -97,7 +103,12 @@ def _transform_affine(locs, orig_cp, deformed_cp):
 
 
 class Transformer:
-    def __init__(self, control_points: ArrayLike, deformed_control_points: ArrayLike):
+    def __init__(
+        self,
+        control_points: ArrayLike,
+        deformed_control_points: ArrayLike,
+        weights: Optional[ArrayLike] = None,
+    ):
         """Class for transforming points using Moving Least Squares.
 
         Given control point arrays must both be of same shape NxD,
@@ -108,6 +119,8 @@ class Transformer:
         ----------
         control_points : ArrayLike
         deformed_control_points : ArrayLike
+        weights : Optional[ArrayList]
+            Any values <= 0 will be set to an arbitrarily small positive number
 
         Raises
         ------
@@ -125,6 +138,16 @@ class Transformer:
         self.n_landmarks, self.ndim = from_arr.shape
         self.control_points = from_arr
         self.deformed_control_points = to_arr
+
+        if weights is not None:
+            weights = np.asarray(weights)
+            if weights.shape != (len(from_arr),):
+                raise ValueError(
+                    "weights must have same length as control points array"
+                )
+            weights[weights <= 0] = sys.float_info.epsilon
+
+        self.weights = weights
 
     def transform(
         self,
@@ -164,4 +187,4 @@ class Transformer:
         #     return self._transform_affine(locs, orig_cp, deformed_cp)
         # else:
         #     raise ValueError(f"Unimplemented/ unknown strategy {strategy}")
-        return _transform_affine(locs, orig_cp, deformed_cp)
+        return _transform_affine(locs, orig_cp, deformed_cp, self.weights)
